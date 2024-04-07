@@ -1,0 +1,98 @@
+﻿CREATE TYPE "Unit" AS ENUM (
+    'шт.'
+    );
+
+CREATE TABLE "Role"
+(
+	"id" SERIAL PRIMARY KEY,
+	"name" VARCHAR(100) NOT NULL
+) WITH (
+      OIDS=FALSE
+    );
+
+CREATE TABLE "User"
+(
+	"id" SERIAL PRIMARY KEY,
+	"surname" VARCHAR(100) NOT NULL,
+	"name" VARCHAR(100) NOT NULL,
+	"patronymic" VARCHAR(100) NOT NULL,
+	"login" VARCHAR(100) UNIQUE NOT NULL,
+	"password" VARCHAR(100) NOT NULL,
+	"role" INT REFERENCES "Role"("id") NOT NULL
+) WITH (
+      OIDS=FALSE
+    );
+
+CREATE TABLE "Order"
+(
+	"id" SERIAL PRIMARY KEY,
+	"status" VARCHAR(100) NOT NULL,
+	"delivery_date" date NOT NULL,
+	"pickup_point" INT REFERENCES "PickupPoint"("id") NOT NULL,
+    "order_date" TIMESTAMP NOT NULL,
+    "code" varchar(20) NOT NULL,
+    "user_id" INT REFERENCES "User"("id")
+) WITH (
+      OIDS=FALSE
+    );
+
+CREATE TABLE IF NOT EXISTS "PickupPoint"(
+    "id" SERIAL PRIMARY KEY,
+    "city" varchar(255) NOT NULL,
+    "street" varchar(255) NOT NULL,
+    "number_house" varchar(255),
+    "code" varchar(20) NOT NULL
+) WITH (
+      OIDS=FALSE
+    );
+
+CREATE TABLE IF NOT EXISTS "ProductCategory"
+(
+    "id" SERIAL PRIMARY KEY,
+    "name" varchar(255) NOT NULL
+) WITH (
+      OIDS=FALSE
+    );
+
+
+CREATE TABLE IF NOT EXISTS "Manufacture"
+(
+    "id" SERIAL PRIMARY KEY,
+    "name" varchar(32) NOT NULL
+) WITH (
+      OIDS=FALSE
+    );
+
+CREATE TABLE IF NOT EXISTS "Provider"
+(
+    "id" SERIAL PRIMARY KEY,
+    "name" varchar(16) NOT NULL
+) WITH (
+      OIDS=FALSE
+    );
+
+CREATE TABLE "Product"
+(
+	"article_number" VARCHAR(100) PRIMARY KEY,
+	"name" TEXT NOT NULL,
+	"description" TEXT NOT NULL,
+	"category"  INT REFERENCES "ProductCategory"("id") NOT NULL,
+	"photo" BYTEA,
+	"manufacturer" INT REFERENCES "Manufacture"("id") NOT NULL,
+    "provider" INT REFERENCES "Provider"("id") NOT NULL,
+	"cost" DECIMAL(19,4) NOT NULL,
+	"discount_amount" SMALLINT NULL,
+    "max_discount_amount" int NULL,
+	"quantity_in_stock" INT NOT NULL,
+    "unit" "Unit" NOT NULL
+) WITH (
+      OIDS=FALSE
+    );
+
+CREATE TABLE "OrderProduct"
+(
+	"order_iD" INT REFERENCES "Order"("id") NOT NULL,
+	"product_article_number" VARCHAR(100) REFERENCES "Product"("article_number") NOT NULL,
+    "count" SMALLINT NOT NULL,
+	PRIMARY KEY ("order_iD", "product_article_number")
+);
