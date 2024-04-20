@@ -1,5 +1,6 @@
 ﻿using JewelryShop.Middleware;
 using JewelryShop.Repository;
+using JewelryShop.ViewModel;
 using Npgsql;
 using NpgsqlTypes;
 using System;
@@ -23,16 +24,16 @@ namespace JewelryShop.View
     /// </summary>
     public partial class AuthorizationWindow : Window
     {
-        private DbCommandSender commandSender;
         private CaptchaManager captchaManager;
+        private Authorization authorization;
         private bool isRequireCaptcha;
         private string captchaCode;
         public AuthorizationWindow()
         {
             InitializeComponent();
             DbConnector.Connect("localhost", "5432", "postgres", "1234", "exam");
-            commandSender = new DbCommandSender();
             captchaManager = new CaptchaManager();
+            authorization = new Authorization();
         }
 
         private void onSingIn(object sender, RoutedEventArgs e)
@@ -51,7 +52,7 @@ namespace JewelryShop.View
                 return;
             }
 
-            var user = commandSender.SignIn(login, password);
+            var user = authorization.SignIn(login, password);
             if (user == null)
             {
                 MessageBox.Show("Неверный логин или пароль");
@@ -61,10 +62,12 @@ namespace JewelryShop.View
                 return;
             }
 
-            ProductWindow productWindow = new ProductWindow();
+            ProductWindow productWindow = new ProductWindow(user);
             switch (user.Role)
             {
                 case 4: // Администратор
+                    productWindow.Show();
+                    Hide();
                     break;
                 case 5: // Менеджер
                     productWindow.Show();
